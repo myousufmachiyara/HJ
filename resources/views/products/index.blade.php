@@ -67,7 +67,7 @@
 
       <div class="modal fade" id="bulkUploadModal" tabindex="-1" aria-labelledby="bulkUploadModalLabel" aria-hidden="true">
         <div class="modal-dialog">
-          <form action="{{ route('products.bulk-upload.store') }}" method="POST" enctype="multipart/form-data" class="modal-content">
+          <form  method="POST" enctype="multipart/form-data" class="modal-content">
             @csrf
             <div class="modal-header">
               <h5 class="modal-title" id="bulkUploadModalLabel">Bulk Upload Products</h5>
