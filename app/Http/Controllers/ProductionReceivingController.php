@@ -198,9 +198,9 @@ class ProductionReceivingController extends Controller
         $pdf->setCellPadding(1.5);
 
         // --- Logo ---
-        $logoPath = public_path('assets/img/Jild-Logo.png');
+        $logoPath = public_path('assets/img/hj-logo.jpg');
         if (file_exists($logoPath)) {
-            $pdf->Image($logoPath, 10, 10, 30);
+            $pdf->Image($logoPath, 10, 10, 60);
         }
 
         // --- Info Box ---
