@@ -151,13 +151,10 @@ class DatabaseSeeder extends Seeder
 
         // 📏 Measurement Units
         MeasurementUnit::insert([
-            ['id' => 1, 'name' => 'Carat', 'shortcode' => 'ct'],
-            ['id' => 2, 'name' => 'Milligram', 'shortcode' => 'mg'],
-            ['id' => 3, 'name' => 'Kilogram', 'shortcode' => 'kg'],
-            ['id' => 4, 'name' => 'Gram', 'shortcode' => 'g'],
-            ['id' => 5, 'name' => 'Tola', 'shortcode' => 'tola'],
-            ['id' => 6, 'name' => 'Karat', 'shortcode' => 'K'],
-            ['id' => 7, 'name' => 'Millimeter', 'shortcode' => 'mm'],
+            ['id' => 1, 'name' => 'Piece', 'shortcode' => 'pcs'],
+            ['id' => 2, 'name' => 'Meter', 'shortcode' => 'm'],
+            ['id' => 3, 'name' => 'Square Feet', 'shortcode' => 'sq.ft'],
+            ['id' => 4, 'name' => 'Yards', 'shortcode' => 'yrds'],
         ]);
 
         $sequences = [
