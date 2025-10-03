@@ -15,7 +15,7 @@ class ProductionDetail extends Model
         'variation_id',
         'qty',
         'rate',
-        'unit',
+        'unit_id',
         'invoice_id',
         'desc'
     ];
@@ -37,7 +37,7 @@ class ProductionDetail extends Model
 
     public function measurementUnit()
     {
-        return $this->belongsTo(MeasurementUnit::class, 'unit');
+        return $this->belongsTo(MeasurementUnit::class, 'unit_id');
     }
 
     public function variation()

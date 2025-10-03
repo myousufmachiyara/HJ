@@ -77,22 +77,6 @@
             </li>
           @endif
 
-
-          {{-- Stock Management --}}
-          @if(auth()->user()->can('locations.index') || auth()->user()->can('stock_transfer.index'))
-          <li class="nav-parent">
-            <a class="nav-link" href="#"><i class="fa fa-cubes"></i> <span>Stock Management</span></a>
-            <ul class="nav nav-children">
-              @can('locations.index')
-                <li><a class="nav-link" href="{{ route('locations.index') }}">Locations</a></li>
-              @endcan
-              @can('stock_transfer.index')
-                <li><a class="nav-link" href="{{ route('stock_transfer.index') }}">Transfer</a></li>
-              @endcan
-            </ul>
-          </li>
-          @endif
-
           {{-- Purchase Invoices --}}
           @if(auth()->user()->can('purchase_invoices.index') || auth()->user()->can('purchase_return.index'))
           <li class="nav-parent">
@@ -120,25 +104,6 @@
               <li><a class="nav-link" href="{{ route('production.index') }}">Order</a></li>
               <li><a class="nav-link" href="{{ route('production_receiving.index') }}">Receiving</a></li>
               <li><a class="nav-link" href="{{ route('production_return.index') }}">Return</a></li>
-            </ul>
-          </li>
-          @endif
-          
-
-          {{-- Sale Invoices --}}
-          @if(auth()->user()->can('sale_invoices.index') || auth()->user()->can('sale_return.index'))
-          <li class="nav-parent">
-            <a class="nav-link" href="#"><i class="fa fa-cash-register"></i> <span>Sale</span></a>
-            <ul class="nav nav-children">
-              @can('sale_orders.index')
-              <li><a class="nav-link" href="{{ route('sale_orders.index') }}">Order</a></li>
-              @endcan
-              @can('sale_invoices.index')
-              <li><a class="nav-link" href="{{ route('sale_invoices.index') }}">Invoices</a></li>
-              @endcan
-              @can('sale_return.index')
-              <li><a class="nav-link" href="{{ route('sale_return.index') }}">Return</a></li>
-              @endcan
             </ul>
           </li>
           @endif

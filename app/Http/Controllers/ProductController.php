@@ -404,6 +404,7 @@ class ProductController extends Controller
                 'name'               => $product->name,
                 'manufacturing_cost' => $product->manufacturing_cost, // ✅ always included
                 'unit'               => $unitId,
+                'consumption'        => $product->consumption,
             ],
         ]);
     }

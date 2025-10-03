@@ -12,10 +12,7 @@ class Production extends Model
 
     protected $fillable = [
         'vendor_id',
-        'category_id',
-        'voucher_id',
         'order_date',
-        'production_type',
         'remarks',
         'created_by',
         'updated_by',
@@ -24,11 +21,6 @@ class Production extends Model
     public function vendor()
     {
         return $this->belongsTo(ChartOfAccounts::class, 'vendor_id');
-    }
-
-    public function category()
-    {
-        return $this->belongsTo(ProductCategory::class, 'category_id');
     }
 
     public function details()
@@ -41,9 +33,9 @@ class Production extends Model
         return $this->hasMany(ProductionReceiving::class);
     }
 
-    public function voucher()
+    public function productDetails()
     {
-        return $this->belongsTo(Voucher::class, 'voucher_id');
+        return $this->hasMany(ProductionProductDetail::class);
     }
-
 }
+

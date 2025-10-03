@@ -75,7 +75,7 @@
               </select>
             </div>
 
-            <div class="col-md-2">
+            <div class="col-md-2 mt-3">
               <label>Consumption</label>
               <input type="number" step="any" name="consumption" class="form-control" value="{{ old('consumption', $product->consumption) }}">
             </div>

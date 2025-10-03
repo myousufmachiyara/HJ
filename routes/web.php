@@ -40,16 +40,9 @@ Route::middleware(['auth'])->group(function () {
 
     // Product Helpers
     Route::get('/products/details', [ProductController::class, 'details'])->name('products.receiving');
-    Route::get('/products/barcode-selection', [ProductController::class, 'barcodeSelection'])->name('products.barcode.selection');
-    Route::post('/products/generate-multiple-barcodes', [ProductController::class, 'generateMultipleBarcodes'])->name('products.generateBarcodes');
     Route::get('/get-product-by-code/{barcode}', [ProductController::class, 'getByBarcode'])->name('product.byBarcode');
     Route::get('/product/{product}/variations', [ProductController::class, 'getVariations'])->name('product.variations');
     Route::get('/product/{product}/productions', [ProductionController::class, 'getProductProductions'])->name('product.productions');
-    
-    Route::get('/products/bulk-upload/template', [ProductController::class, 'bulkUploadTemplate'])->name('products.bulk-upload.template')->middleware('check.permission:products.create');
-    Route::get('/products/bulk-export', [ProductController::class, 'bulkExport'])->name('products.bulk-export')->middleware('check.permission:products.create');
-    Route::post('/products/bulk-import', [ProductController::class, 'bulkImport'])->name('products.bulk-import')->middleware('check.permission:products.create');
-
     //Purchase Helper
     Route::get('/product/{product}/invoices', [PurchaseInvoiceController::class, 'getProductInvoices']);
 
@@ -84,7 +77,6 @@ Route::middleware(['auth'])->group(function () {
         'production' => ['controller' => ProductionController::class, 'permission' => 'production'],
         'production_receiving' => ['controller' => ProductionReceivingController::class, 'permission' => 'production_receiving'],
         'production_return' => ['controller' => ProductionReturnController::class, 'permission' => 'production_return'],
-
     ];
 
     foreach ($modules as $uri => $config) {
@@ -129,7 +121,6 @@ Route::middleware(['auth'])->group(function () {
         Route::get('inventory', [InventoryReportController::class, 'inventoryReports'])->name('inventory');
         Route::get('purchase', [PurchaseReportController::class, 'purchaseReports'])->name('purchase');
         Route::get('production', [ProductionReportController::class, 'productionReports'])->name('production');
-        Route::get('sale', [SalesReportController::class, 'saleReports'])->name('sale');
         Route::get('accounts', [AccountsReportController::class, 'accounts'])->name('accounts');
     });
 });
