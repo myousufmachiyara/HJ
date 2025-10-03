@@ -165,42 +165,56 @@
           </section>
         </div>
 
-        <div class="col-12">
-          <section class="card">
-            <header class="card-header d-flex justify-content-between">
-              <h2 class="card-title">Summary</h2>
-            </header>
-            <div class="card-body">
-              <div class="row pb-4">
-                <div class="col-12 col-md-2">
-                  <label>Total Raw Qty</label>
-                  <input type="number" class="form-control" id="total_fab" placeholder="Total Qty" disabled/>
-                </div>
-
-                <div class="col-12 col-md-2">
-                  <label>Total Raw Amount</label>
-                  <input type="number" class="form-control" id="total_fab_amt" placeholder="Total Amount" disabled />
-                </div>
-                
-                <div class="col-12 col-md-3">
-                  <label>Attachment</label>
-                  <input type="file" class="form-control" name="attachments[]" multiple accept="image/png, image/jpeg, image/jpg, image/webp">
-                </div>
-
-                <div class="col-12 text-end">
-                  <h3 class="font-weight-bold mb-0 text-5 text-primary">Net Amount</h3>
-                  <span><strong class="text-4 text-primary">PKR <span id="netTotal" class="text-4 text-danger">0.00</span></strong></span>
-                  <input type="hidden" name="total_amount" id="net_amount">
-                </div>
-              </div>
-            </div>
-
-            <footer class="card-footer text-end">
-              <a class="btn btn-danger" href="{{ route('production.index') }}">Discard</a>
-              <button type="submit" class="btn btn-primary">Create</button>
-            </footer>
-          </section>
+<div class="col-12">
+  <section class="card">
+    <header class="card-header d-flex justify-content-between">
+      <h2 class="card-title">Summary</h2>
+    </header>
+    <div class="card-body">
+      <div class="row pb-4">
+        <div class="col-12 col-md-2">
+          <label>Total Raw Qty</label>
+          <input type="number" class="form-control" id="total_fab" placeholder="Total Qty" disabled/>
         </div>
+
+        <div class="col-12 col-md-2">
+          <label>Total Raw Amount</label>
+          <input type="number" class="form-control" id="total_fab_amt" placeholder="Total Amount" disabled />
+        </div>
+
+        <div class="col-12 col-md-2">
+          <label>Total Raw Use</label>
+          <input type="number" class="form-control" id="total_raw_use" placeholder="Total Raw Use" disabled />
+        </div>
+
+        <div class="col-12 col-md-2">
+          <label>Remaining Raw</label>
+          <input type="number" class="form-control" id="remaining_raw" placeholder="Remaining Raw" disabled />
+        </div>
+
+        <div class="col-12 col-md-2">
+          <label>Products Total Amount</label>
+          <input type="number" class="form-control" id="product_total_amt" placeholder="Total Amount" disabled />
+        </div>
+
+        <div class="col-12 text-end mt-3">
+          <h3 class="font-weight-bold mb-0 text-5 text-primary">Net Amount</h3>
+          <span>
+            <strong class="text-4 text-primary">PKR 
+              <span id="netTotal" class="text-4 text-danger">0.00</span>
+            </strong>
+          </span>
+          <input type="hidden" name="total_amount" id="net_amount">
+        </div>
+      </div>
+    </div>
+    <footer class="card-footer text-end">
+      <a class="btn btn-danger" href="{{ route('production.index') }}">Discard</a>
+      <button type="submit" class="btn btn-primary">Create</button>
+    </footer>
+  </section>
+</div>
+
       </div>
     </form>
   </div>
@@ -291,8 +305,10 @@
 
       $('#total_fab').val(totalQty);
       $('#total_fab_amt').val(totalAmt.toFixed(2));
-      updateNetTotal(totalAmt);
+
+      recalcSummary(); // call summary again
     }
+
 
     function updateNetTotal(total) {
       const net = parseFloat(total) || 0;
@@ -574,25 +590,31 @@
 
 
     // 🔹 Recalculate summary totals
-  function recalcSummary() {
-      let totalPcs = 0, totalAmt = 0;
+    function recalcSummary() {
+      let totalRawUse = 0, productTotalAmt = 0;
+
       $('#itemTable tbody tr').each(function () {
-          const qty = parseFloat($(this).find('.received-qty').val()) || 0;
-          const total = parseFloat($(this).find('.row-total').val()) || 0;
-          totalPcs += qty;
-          totalAmt += total;
+        const rawUse = parseFloat($(this).find('.raw_use').val()) || 0;
+        const total = parseFloat($(this).find('input[name$="[total]"]').val()) || 0;
+
+        totalRawUse += rawUse;
+        productTotalAmt += total;
       });
 
-      $('#total_pcs').val(totalPcs);
-      $('#total_pcs_val').val(totalPcs);
-      $('#total_amt').val(totalAmt.toFixed(2));
+      // Fill values in summary
+      $('#total_raw_use').val(totalRawUse.toFixed(2));
+      $('#product_total_amt').val(productTotalAmt.toFixed(2));
 
-      const conv = parseFloat($('#convance_charges').val()) || 0;
-      const disc = parseFloat($('#bill_discount').val()) || 0;
-      const net = totalAmt + conv - disc;
-      $('#netAmountText').text(net.toFixed(2));
+      // Remaining raw = Total raw qty - Total raw use
+      const totalRawQty = parseFloat($('#total_fab').val()) || 0;
+      const remainingRaw = totalRawQty - totalRawUse;
+      $('#remaining_raw').val(remainingRaw.toFixed(2));
 
-  }
+      // Net amount = Product total amount (you can adjust logic if needed)
+      $('#netTotal').text(formatNumberWithCommas(productTotalAmt.toFixed(0)));
+      $('#net_amount').val(productTotalAmt.toFixed(2));
+    }
+
   </script>
 
 @endsection
