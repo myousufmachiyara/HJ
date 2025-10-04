@@ -44,6 +44,8 @@
             <div class="col-md-2">
               <label>Sub Category </label>
               <select name="subcategory_id" class="form-control">
+                <option value="">Select Sub-Category</option>
+
                 @foreach($subcategories as $subcat)
                   <option value="{{ $subcat->id }}" {{ $product->subcategory_id == $subcat->id ? 'selected' : '' }}>{{ $subcat->name }}</option>
                 @endforeach
@@ -53,14 +55,6 @@
             <div class="col-md-2">
               <label>SKU</label>
               <input type="text" name="sku" id="sku" class="form-control" value="{{ old('sku', $product->sku) }}">
-            </div>
-
-            <div class="col-md-2">
-              <label>Item Type</label>
-              <select name="item_type" class="form-control select2-js">
-                <option value="fg" {{ $product->item_type == 'fg' ? 'selected' : '' }}>F.G</option>
-                <option value="raw" {{ $product->item_type == 'raw' ? 'selected' : '' }}>Raw</option>
-              </select>
             </div>
 
             <div class="col-md-2">
@@ -75,7 +69,7 @@
               </select>
             </div>
 
-            <div class="col-md-2 mt-3">
+            <div class="col-md-2">
               <label>Consumption</label>
               <input type="number" step="any" name="consumption" class="form-control" value="{{ old('consumption', $product->consumption) }}">
             </div>

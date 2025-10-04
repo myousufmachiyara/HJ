@@ -49,6 +49,7 @@ Route::middleware(['auth'])->group(function () {
     // Production Summary
     Route::get('/production-summary/{id}', [ProductionController::class, 'summary'])->name('production.summary');
     Route::get('/production-gatepass/{id}', [ProductionController::class, 'printGatepass'])->name('production.gatepass');
+
     // Common Modules
     $modules = [
         // User Management
@@ -98,6 +99,7 @@ Route::middleware(['auth'])->group(function () {
                 Route::put('/{id}', [$controller, 'update'])->middleware("check.permission:$permission.edit")->name("vouchers.update");
                 Route::delete('/{id}', [$controller, 'destroy'])->middleware("check.permission:$permission.delete")->name("vouchers.destroy");
                 Route::get('/{id}/print', [$controller, 'print'])->middleware("check.permission:$permission.print")->name('vouchers.print');
+                Route::post('/{id}/attachments', [$controller, 'addAtt'])->middleware("check.permission:$permission.create")->name("vouchers.addAtt");
             });
 
             continue;
@@ -114,6 +116,11 @@ Route::middleware(['auth'])->group(function () {
         Route::put("$uri/$param", [$controller, 'update'])->middleware("check.permission:$permission.edit")->name("$uri.update");
         Route::delete("$uri/$param", [$controller, 'destroy'])->middleware("check.permission:$permission.delete")->name("$uri.destroy");
         Route::get("$uri/$param/print", [$controller, 'print'])->middleware("check.permission:$permission.print")->name("$uri.print");
+
+        // hanlde attachements
+        Route::post("$uri/$param/attachments", [$controller, 'addAtt'])->middleware("check.permission:$permission.create")->name("$uri.addAtt");
+        Route::get("$uri/$param/attachments", [$controller, 'getAttachments'])->middleware("check.permission:$permission.index")->name("$uri.getAttachments");
+        Route::delete("$uri/attachments/{attachmentId}", [$controller, 'deleteAttachment'])->middleware("check.permission:$permission.delete")->name("$uri.deleteAttachment");
     }
 
     // Reports (readonly)

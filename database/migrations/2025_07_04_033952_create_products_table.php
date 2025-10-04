@@ -33,7 +33,6 @@ return new class extends Migration
 
             // Classification
             $table->unsignedBigInteger('measurement_unit');
-            $table->string('item_type', 10)->nullable(); // fg, raw, service
             $table->boolean('is_active')->default(true);
 
             $table->softDeletes();

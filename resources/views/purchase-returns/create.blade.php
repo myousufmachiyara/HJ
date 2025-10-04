@@ -15,7 +15,7 @@
 
         <div class="card-body">
           <div class="row mb-3">
-            <div class="col-md-3">
+            <div class="col-12 col-md-2">
               <label>Vendor</label>
               <select name="vendor_id" class="form-control select2-js" required>
                 <option value="">Select Vendor</option>
@@ -217,7 +217,7 @@
       let options = '<option value="">Select Invoice</option>';
       data.forEach(inv => {
         // Store rate as data attribute
-        options += `<option value="${inv.id}" data-rate="${inv.rate}">#${inv.id}</option>`;
+        options += `<option value="${inv.id}" data-rate="${inv.rate}">INV-${inv.id}</option>`;
       });
       $invoiceSelect.html(options);
 

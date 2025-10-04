@@ -24,7 +24,6 @@ class Product extends Model
         'max_stock_level',
         'minimum_order_qty',
         'measurement_unit',
-        'item_type',    // fg, raw, service
         'is_active',
     ];
 

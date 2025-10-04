@@ -19,8 +19,6 @@ return new class extends Migration
             $table->string('bill_no')->nullable();
             $table->string('ref_no')->nullable();
             $table->text('remarks')->nullable();
-            $table->decimal('convance_charges', 15, 2)->default(0);
-            $table->decimal('labour_charges', 15, 2)->default(0);
             $table->decimal('bill_discount', 15, 2)->default(0);
             $table->unsignedBigInteger('created_by');
             $table->timestamps();

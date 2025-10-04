@@ -16,7 +16,7 @@
 
         <div class="card-body">
           <div class="row mb-3">
-            <div class="col-md-3">
+            <div class="col-12 col-md-2">
               <label>Vendor</label>
               <select name="vendor_id" class="form-control select2-js" required>
                 <option value="">Select Vendor</option>
@@ -28,7 +28,7 @@
               </select>
             </div>
 
-            <div class="col-md-2">
+            <div class="col-12 col-md-2">
               <label>Return Date</label>
               <input type="date" name="return_date" class="form-control" value="{{ $purchaseReturn->return_date->toDateString() }}" required>
             </div>
@@ -233,7 +233,7 @@ function loadInvoices(row, productId, updatePrice = false, selectedInvoiceId = n
   $.get(`/product/${productId}/invoices`, function (data) {
     let options = '<option value="">Select Invoice</option>';
     data.forEach(inv => {
-      options += `<option value="${inv.id}" data-rate="${inv.rate}">#${inv.id}</option>`;
+      options += `<option value="${inv.id}" data-rate="${inv.rate}">INV-${inv.id}</option>`;
     });
     $invoiceSelect.html(options);
 

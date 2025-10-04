@@ -27,7 +27,6 @@
                 <th>S.No</th>
                 <th>PO Code</th>
                 <th>Date</th>
-                <th>Category</th>
                 <th>Vendor</th>
                 <th>Total Amount</th>
                 <th>Attachments</th>
@@ -40,7 +39,6 @@
                 <td>{{ $loop->iteration }}</td>
                 <td>PO-{{ $production->id }}</td>
                 <td>{{ \Carbon\Carbon::parse($production->order_date)->format('d-m-Y') }}</td>
-                <td>{{ $production->category->name ?? '-' }}</td>
                 <td>{{ $production->vendor->name ?? '-' }}</td>
                 <td>{{ number_format($production->total_amount ?? 0, 0) }}</td>
                 <td>

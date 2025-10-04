@@ -107,7 +107,6 @@ class ProductController extends Controller
             'barcode' => 'nullable|string',
             'description' => 'nullable|string',
             'measurement_unit' => 'required|exists:measurement_units,id',
-            'item_type' => 'required|in:fg,raw,service',
             'manufacturing_cost' => 'nullable|numeric',
             'consumption' => 'nullable|numeric',
             'selling_price' => 'nullable|numeric',
@@ -125,7 +124,7 @@ class ProductController extends Controller
             // ✅ Create Product
             $productData = $request->only([
                 'name', 'category_id', 'subcategory_id', 'sku', 'barcode', 'description',
-                'measurement_unit', 'item_type', 'manufacturing_cost',
+                'measurement_unit', 'manufacturing_cost',
                 'opening_stock', 'selling_price', 'consumption',
                 'reorder_level', 'max_stock_level', 'minimum_order_qty', 'is_active'
             ]);
@@ -231,7 +230,7 @@ class ProductController extends Controller
 
             // ✅ Update product
             $product->update($request->only([
-                'name', 'category_id', 'subcategory_id', 'sku', 'measurement_unit', 'item_type',
+                'name', 'category_id', 'subcategory_id', 'sku', 'measurement_unit',
                 'manufacturing_cost', 'opening_stock', 'description', 'selling_price',
                 'consumption', 'reorder_level', 'max_stock_level', 'minimum_order_qty', 'is_active'
             ]));

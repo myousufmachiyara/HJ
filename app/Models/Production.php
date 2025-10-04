@@ -18,6 +18,10 @@ class Production extends Model
         'updated_by',
     ];
 
+    protected $casts = [
+        'order_date' => 'date',
+    ];
+
     public function vendor()
     {
         return $this->belongsTo(ChartOfAccounts::class, 'vendor_id');

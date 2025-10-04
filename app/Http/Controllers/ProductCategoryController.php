@@ -41,11 +41,13 @@ class ProductCategoryController extends Controller
             ->with('success', 'Category updated successfully.');
     }
 
-    public function destroy(ProductCategory $productCategory)
+    public function destroy($id)
     {
+        $productCategory = ProductCategory::findOrFail($id);
         $productCategory->delete();
 
         return redirect()->route('product_categories.index')
             ->with('success', 'Category deleted successfully.');
     }
+
 }

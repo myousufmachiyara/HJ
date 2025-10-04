@@ -157,6 +157,29 @@ class DatabaseSeeder extends Seeder
             ['id' => 4, 'name' => 'Yards', 'shortcode' => 'yrds'],
         ]);
 
+        // 🏷️ Seed Attributes
+        Attribute::insert([
+            ['id' => 1, 'name' => 'SIZE', 'slug' => 'size', 'deleted_at' => null, 'created_at' => $now, 'updated_at' => $now],
+            ['id' => 2, 'name' => 'METER', 'slug' => 'meter', 'deleted_at' => null, 'created_at' => $now, 'updated_at' => $now],
+        ]);
+
+        AttributeValue::insert([
+            // SIZE attribute_id = 1
+            ['id' => 1, 'attribute_id' => 1, 'value' => '12', 'created_at' => '2025-07-11 19:31:15', 'updated_at' => '2025-07-11 19:31:15'],
+            ['id' => 2, 'attribute_id' => 1, 'value' => '14', 'created_at' => '2025-07-11 19:31:15', 'updated_at' => '2025-07-11 19:31:15'],
+            ['id' => 3, 'attribute_id' => 1, 'value' => '16', 'created_at' => '2025-07-11 18:22:55', 'updated_at' => '2025-07-11 18:22:55'],
+            ['id' => 4, 'attribute_id' => 1, 'value' => '18', 'created_at' => '2025-07-11 18:22:55', 'updated_at' => '2025-07-11 18:22:55'],
+            ['id' => 5, 'attribute_id' => 1, 'value' => '20', 'created_at' => '2025-07-11 18:22:55', 'updated_at' => '2025-07-11 18:22:55'],
+            ['id' => 6, 'attribute_id' => 1, 'value' => '22', 'created_at' => '2025-07-11 18:22:55', 'updated_at' => '2025-07-11 18:22:55'],
+            ['id' => 7, 'attribute_id' => 1, 'value' => '24', 'created_at' => '2025-07-11 19:31:15', 'updated_at' => '2025-07-11 19:31:15'],
+            ['id' => 8, 'attribute_id' => 1, 'value' => '26', 'created_at' => '2025-07-11 19:31:15', 'updated_at' => '2025-07-11 19:31:15'],
+           
+            // COLOR attribute_id = 2
+            ['id' => 11, 'attribute_id' => 2, 'value' => '36', 'created_at' => '2025-07-11 18:23:46', 'updated_at' => '2025-07-11 18:23:46'],
+            ['id' => 12, 'attribute_id' => 2, 'value' => '54', 'created_at' => '2025-07-11 18:23:46', 'updated_at' => '2025-07-11 18:23:46'],
+            ['id' => 13, 'attribute_id' => 2, 'value' => '60', 'created_at' => '2025-07-11 18:23:46', 'updated_at' => '2025-07-11 18:23:46'],
+        ]);
+
         $sequences = [
             ['prefix' => 'GLOBAL', 'next_number' => 1],
             ['prefix' => 'FG', 'next_number' => 1],

@@ -18,6 +18,7 @@ use Carbon\Carbon;
 
 class PurchaseInvoiceController extends Controller
 {
+    
     public function index()
     {
         $invoices = PurchaseInvoice::with('vendor')->latest()->get();
@@ -49,8 +50,6 @@ class PurchaseInvoiceController extends Controller
             'unit.*'         => 'required|exists:measurement_units,id',
             'price.*'        => 'required|numeric|min:0',
             'item_remarks.*' => 'nullable|string',
-            'convance_charges' => 'nullable|numeric|min:0',
-            'labour_charges'   => 'nullable|numeric|min:0',
             'bill_discount'    => 'nullable|numeric|min:0',
         ]);
 
@@ -69,8 +68,6 @@ class PurchaseInvoiceController extends Controller
                 'bill_no'          => $request->bill_no,
                 'ref_no'           => $request->ref_no,
                 'remarks'          => $request->remarks,
-                'convance_charges' => $request->convance_charges ?? 0,
-                'labour_charges'   => $request->labour_charges ?? 0,
                 'bill_discount'    => $request->bill_discount ?? 0,
                 'created_by'       => auth()->id(),
             ]);
@@ -161,8 +158,6 @@ class PurchaseInvoiceController extends Controller
             'unit.*'         => 'required|exists:measurement_units,id',
             'price.*'        => 'required|numeric|min:0',
             'item_remarks.*' => 'nullable|string',
-            'convance_charges' => 'nullable|numeric|min:0',
-            'labour_charges'   => 'nullable|numeric|min:0',
             'bill_discount'    => 'nullable|numeric|min:0',
         ]);
 
@@ -179,8 +174,6 @@ class PurchaseInvoiceController extends Controller
                 'bill_no'          => $request->bill_no,
                 'ref_no'           => $request->ref_no,
                 'remarks'          => $request->remarks,
-                'convance_charges' => $request->convance_charges ?? 0,
-                'labour_charges'   => $request->labour_charges ?? 0,
                 'bill_discount'    => $request->bill_discount ?? 0,
             ]);
 
@@ -458,4 +451,53 @@ class PurchaseInvoiceController extends Controller
             return response()->json(['error' => 'Failed to load invoices'], 500);
         }
     }
+
+    public function addAtt(Request $request, $id)
+    {
+        $request->validate([
+            'attachments.*' => 'required|file|mimes:jpg,jpeg,png,pdf,zip|max:2048',
+        ]);
+
+        $invoice = PurchaseInvoice::findOrFail($id);
+
+        foreach ($request->file('attachments') as $file) {
+            $path = $file->store('purchase_invoices', 'public');
+
+            $invoice->attachments()->create([
+                'file_path' => $path,
+            ]);
+        }
+
+        return back()->with('success', 'Attachments uploaded successfully.');
+    }
+
+    public function getAttachments($id)
+    {
+        $invoice = PurchaseInvoice::findOrFail($id);
+
+        $attachments = $invoice->attachments->map(function ($att) {
+            return [
+                'id'            => $att->id,
+                'file_path'     => $att->file_path,            // relative path in storage
+                'original_name' => $att->original_name,
+                'download_url'  => asset('storage/' . $att->file_path),
+            ];
+        });
+
+        return response()->json($attachments);
+    }
+
+    public function deleteAttachment($id)
+    {
+        $attachment = PurchaseInvoiceAttachment::findOrFail($id);
+
+        // Delete from storage
+        \Storage::disk('public')->delete($attachment->file_path);
+
+        // Delete record
+        $attachment->delete();
+
+        return back()->with('success', 'Attachment deleted successfully.');
+    }
+
 }

@@ -55,16 +55,6 @@
             </div>
 
             <div class="col-md-2">
-              <label>Item Type</label>
-              <select name="item_type" class="form-control" required>
-                <option value="" disabled selected>Item Type</option>
-                <option value="fg">F.G</option>
-                <option value="raw">Raw</option>
-              </select>
-              @error('item_type')<div class="text-danger">{{ $message }}</div>@enderror
-            </div>
-
-            <div class="col-md-2">
               <label for="unit_id">Measurement Unit</label>
               <select name="measurement_unit" id="unit_id" class="form-control" required>
                 <option value="" disabled selected>-- Select Unit --</option>
@@ -74,7 +64,7 @@
               </select>
             </div>
 
-            <div class="col-md-2 mt-3">
+            <div class="col-md-2">
               <label>Consumption</label>
               <input type="number" step="any" name="consumption" class="form-control" value="{{ old('consumption', '0') }}">
               @error('consumption')<div class="text-danger">{{ $message }}</div>@enderror

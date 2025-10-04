@@ -129,14 +129,6 @@
               <input type="hidden" name="total_quantity" id="total_quantity_show">
             </div>
             <div class="col-md-2">
-              <label>Convance Charges</label>
-              <input type="number" name="convance_charges" id="convance_charges" class="form-control" value="0" onchange="netTotal()">
-            </div>
-            <div class="col-md-2">
-              <label>Labour Charges</label>
-              <input type="number" name="labour_charges" id="labour_charges" class="form-control" value="0" onchange="netTotal()">
-            </div>
-            <div class="col-md-2">
               <label>Bill Discount</label>
               <input type="number" name="bill_discount" id="bill_discount" class="form-control" value="0" onchange="netTotal()">
             </div>

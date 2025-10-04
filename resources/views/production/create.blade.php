@@ -165,55 +165,55 @@
           </section>
         </div>
 
-<div class="col-12">
-  <section class="card">
-    <header class="card-header d-flex justify-content-between">
-      <h2 class="card-title">Summary</h2>
-    </header>
-    <div class="card-body">
-      <div class="row pb-4">
-        <div class="col-12 col-md-2">
-          <label>Total Raw Qty</label>
-          <input type="number" class="form-control" id="total_fab" placeholder="Total Qty" disabled/>
-        </div>
+        <div class="col-12">
+          <section class="card">
+            <header class="card-header d-flex justify-content-between">
+              <h2 class="card-title">Summary</h2>
+            </header>
+            <div class="card-body">
+              <div class="row pb-4">
+                <div class="col-12 col-md-2">
+                  <label>Total Raw Qty</label>
+                  <input type="number" class="form-control" id="total_fab" placeholder="Total Qty" disabled/>
+                </div>
 
-        <div class="col-12 col-md-2">
-          <label>Total Raw Amount</label>
-          <input type="number" class="form-control" id="total_fab_amt" placeholder="Total Amount" disabled />
-        </div>
+                <div class="col-12 col-md-2">
+                  <label>Total Raw Amount</label>
+                  <input type="number" class="form-control" id="total_fab_amt" placeholder="Total Amount" disabled />
+                </div>
 
-        <div class="col-12 col-md-2">
-          <label>Total Raw Use</label>
-          <input type="number" class="form-control" id="total_raw_use" placeholder="Total Raw Use" disabled />
-        </div>
+                <div class="col-12 col-md-2">
+                  <label>Total Raw Use</label>
+                  <input type="number" class="form-control" id="total_raw_use" placeholder="Total Raw Use" disabled />
+                </div>
 
-        <div class="col-12 col-md-2">
-          <label>Remaining Raw</label>
-          <input type="number" class="form-control" id="remaining_raw" placeholder="Remaining Raw" disabled />
-        </div>
+                <div class="col-12 col-md-2">
+                  <label>Remaining Raw</label>
+                  <input type="number" class="form-control" id="remaining_raw" placeholder="Remaining Raw" disabled />
+                </div>
 
-        <div class="col-12 col-md-2">
-          <label>Products Total Amount</label>
-          <input type="number" class="form-control" id="product_total_amt" placeholder="Total Amount" disabled />
-        </div>
+                <div class="col-12 col-md-2">
+                  <label>Products Total Amount</label>
+                  <input type="number" class="form-control" id="product_total_amt" placeholder="Total Amount" disabled />
+                </div>
 
-        <div class="col-12 text-end mt-3">
-          <h3 class="font-weight-bold mb-0 text-5 text-primary">Net Amount</h3>
-          <span>
-            <strong class="text-4 text-primary">PKR 
-              <span id="netTotal" class="text-4 text-danger">0.00</span>
-            </strong>
-          </span>
-          <input type="hidden" name="total_amount" id="net_amount">
+                <div class="col-12 text-end mt-3">
+                  <h3 class="font-weight-bold mb-0 text-5 text-primary">Net Amount</h3>
+                  <span>
+                    <strong class="text-4 text-primary">PKR 
+                      <span id="netTotal" class="text-4 text-danger">0.00</span>
+                    </strong>
+                  </span>
+                  <input type="hidden" name="total_amount" id="net_amount">
+                </div>
+              </div>
+            </div>
+            <footer class="card-footer text-end">
+              <a class="btn btn-danger" href="{{ route('production.index') }}">Discard</a>
+              <button type="submit" class="btn btn-primary">Create</button>
+            </footer>
+          </section>
         </div>
-      </div>
-    </div>
-    <footer class="card-footer text-end">
-      <a class="btn btn-danger" href="{{ route('production.index') }}">Discard</a>
-      <button type="submit" class="btn btn-primary">Create</button>
-    </footer>
-  </section>
-</div>
 
       </div>
     </form>
@@ -309,7 +309,6 @@
       recalcSummary(); // call summary again
     }
 
-
     function updateNetTotal(total) {
       const net = parseFloat(total) || 0;
       $('#netTotal').text(formatNumberWithCommas(net.toFixed(0)));
@@ -373,221 +372,219 @@
         fetchInvoices(itemId, row);
     }
 
+    // 🔹 When variation changes
+    function onVariationChange(select) {
+      const row = select.closest('tr');
+      const variationId = select.value;
+      const productId = select.selectedOptions[0]?.getAttribute('data-product-id');
 
-  // 🔹 When variation changes
-  function onVariationChange(select) {
-    const row = select.closest('tr');
-    const variationId = select.value;
-    const productId = select.selectedOptions[0]?.getAttribute('data-product-id');
+      if (!variationId || !productId) return;
 
-    if (!variationId || !productId) return;
-
-    // Fetch invoices using variation id if selected, else product id
-    fetchInvoices(variationId, row, true);
-  }
-
-  // 🔹 Fetch invoices
-  function fetchInvoices(id, row, isVariation = false) {
-    const invoiceSelect = row.querySelector(`select[id^="invoiceSelect"]`);
-    invoiceSelect.innerHTML = `<option value="" disabled selected>Loading...</option>`;
-
-    fetch(`/product/${id}/invoices`)
-      .then(res => res.json())
-      .then(data => {
-        invoiceSelect.innerHTML = `<option value="" selected>Select Invoice</option>`;
-        if (Array.isArray(data) && data.length > 0) {
-          data.forEach(inv => {
-            invoiceSelect.innerHTML += `<option value="${inv.id}" data-rate="${inv.rate}">${inv.id}</option>`;
-          });
-        } else {
-          invoiceSelect.innerHTML = `<option value="">No Invoices Found</option>`;
-        }
-
-        $(invoiceSelect).select2({ width: '100%' });
-      })
-      .catch(() => {
-        invoiceSelect.innerHTML = `<option value="">Error loading invoices</option>`;
-      });
-  }
-
-  // 🔹 When invoice changes
-  function onInvoiceChange(select) {
-    const row = select.closest('tr');
-    const option = select.selectedOptions[0];
-    if (!row || !option) return;
-
-    const rate = option.getAttribute('data-rate') || 0;
-
-    const rateInput = row.querySelector(`input[id^="item_rate_"]`);
-    const qtyInput = row.querySelector(`input[id^="item_qty_"]`);
-    const totalInput = row.querySelector(`input[id^="item_total_"]`);
-
-    if (rateInput) rateInput.value = rate;
-    if (qtyInput && totalInput) {
-      totalInput.value = ((parseFloat(qtyInput.value) || 0) * (parseFloat(rate) || 0)).toFixed(2);
+      // Fetch invoices using variation id if selected, else product id
+      fetchInvoices(variationId, row, true);
     }
 
-    tableTotal();
-  }
+    // 🔹 Fetch invoices
+    function fetchInvoices(id, row, isVariation = false) {
+      const invoiceSelect = row.querySelector(`select[id^="invoiceSelect"]`);
+      invoiceSelect.innerHTML = `<option value="" disabled selected>Loading...</option>`;
 
-  $(document).on("click", ".delete-row", function () {
-    $(this).closest("tr").remove();
-  });
-
-  $(document).ready(function () {
-    $('.select2-js').select2();
-  });
-
-  $(document).ready(function () {
-
-    // Initialize Select2
-    $('.select2-js').select2({ width: '100%', dropdownAutoWidth: true });
-
-    // 🔹 Manual Product selection
-    $(document).on('change', '.product-select', function () {
-        const row = $(this).closest('tr');
-        const productId = $(this).val();
-        const preselectVariationId = $(this).data('preselectVariationId') || null;
-        $(this).removeData('preselectVariationId');
-
-        if (productId) {
-            loadVariations(row, productId, preselectVariationId);
-        } else {
-            row.find('.variation-select')
-               .html('<option value="">Select Variation</option>')
-               .prop('disabled', false)
-               .trigger('change');
-        }
-    });
-
-    // 🔹 Recalc row on quantity input
-    $(document).on('input', '.order-qty, .consumption, .manufacturing_cost', function () {
-        const row = $(this).closest('tr');
-        recalcRow(row);
-        recalcSummary();
-    });
-
-    // 🔹 Auto-add row on Enter key
-    $(document).on('keypress', '.order-qty', function (e) {
-      if (e.which === 13) {
-          e.preventDefault();
-          const qty = $(this).val().trim();
-          if (qty !== '') {
-              addRow();
+      fetch(`/product/${id}/invoices`)
+        .then(res => res.json())
+        .then(data => {
+          invoiceSelect.innerHTML = `<option value="" selected>Select Invoice</option>`;
+          if (Array.isArray(data) && data.length > 0) {
+            data.forEach(inv => {
+              invoiceSelect.innerHTML += `<option value="${inv.id}" data-rate="${inv.rate}">INV-${inv.id}</option>`;
+            });
           } else {
-              alert('Enter quantity first');
-              $(this).focus();
+            invoiceSelect.innerHTML = `<option value="">No Invoices Found</option>`;
           }
+
+          $(invoiceSelect).select2({ width: '100%' });
+        })
+        .catch(() => {
+          invoiceSelect.innerHTML = `<option value="">Error loading invoices</option>`;
+        });
+    }
+
+    // 🔹 When invoice changes
+    function onInvoiceChange(select) {
+      const row = select.closest('tr');
+      const option = select.selectedOptions[0];
+      if (!row || !option) return;
+
+      const rate = option.getAttribute('data-rate') || 0;
+
+      const rateInput = row.querySelector(`input[id^="item_rate_"]`);
+      const qtyInput = row.querySelector(`input[id^="item_qty_"]`);
+      const totalInput = row.querySelector(`input[id^="item_total_"]`);
+
+      if (rateInput) rateInput.value = rate;
+      if (qtyInput && totalInput) {
+        totalInput.value = ((parseFloat(qtyInput.value) || 0) * (parseFloat(rate) || 0)).toFixed(2);
       }
+
+      tableTotal();
+    }
+
+    $(document).on("click", ".delete-row", function () {
+      $(this).closest("tr").remove();
     });
 
-    // 🔹 Remove row button
-    $(document).on('click', '.remove-row-btn', function () {
-        $(this).closest('tr').remove();
-        recalcSummary();
+    $(document).ready(function () {
+      $('.select2-js').select2();
     });
 
-    // 🔹 Add row button
-    $('#addRowBtn').on('click', addRow);
-  });
+    $(document).ready(function () {
 
-  // 🔹 Add new row
-  function addRow() {
-      const rowCount = $('#itemTable tbody tr').length;
+      // Initialize Select2
+      $('.select2-js').select2({ width: '100%', dropdownAutoWidth: true });
 
-      const productOptions = `
-          <option value="">Select Item</option>
-          @foreach($allProducts as $item)
-            <option value="{{ $item->id }}" 
-                    data-consumption="{{ $item->consumption }}"
-                    data-mfg-cost="{{ $item->manufacturing_cost }}">
-              {{ $item->name }}
-            </option>
-          @endforeach
-      `;
+      // 🔹 Manual Product selection
+      $(document).on('change', '.product-select', function () {
+          const row = $(this).closest('tr');
+          const productId = $(this).val();
+          const preselectVariationId = $(this).data('preselectVariationId') || null;
+          $(this).removeData('preselectVariationId');
 
-      const $newRow = $(`
-          <tr>
-              <td>
-                  <select name="product_details[${rowCount}][product_id]" class="form-control select2-js product-select" required>
-                      ${productOptions}
-                  </select>
-              </td>
-              <td>
-                  <select name="product_details[${rowCount}][variation_id]" class="form-control select2-js variation-select">
-                      <option value="">Select Variation</option>
-                  </select>
-              </td>
-              <td><input type="number" class="form-control consumption" name="product_details[${rowCount}][consumption]" step="any" value="0" required></td>
-              <td><input type="number" class="form-control manufacturing_cost" name="product_details[${rowCount}][manufacturing_cost]" step="any" value="0"></td>
-              <td><input type="number" class="form-control order-qty" name="product_details[${rowCount}][order_qty]" step="any" value="0" required></td>
-              <td><input type="text" class="form-control" name="product_details[${rowCount}][remarks]"></td>
-              <td><input type="number" class="form-control raw_use" name="product_details[0][raw_use]" step="any" value="0" readonly></td>
-              <td><input type="number" class="form-control" name="product_details[0][total]" step="any" value="0" readonly></td>
-              <td><button type="button" class="btn btn-danger btn-sm remove-row-btn"><i class="fas fa-times"></i></button></td>
-          </tr>
-      `);
-
-      $('#itemTable tbody').append($newRow);
-
-      // Reinitialize Select2
-      $newRow.find('.select2-js').select2({ width: '100%', dropdownAutoWidth: true });
-  }
-
-  // 🔹 Load variations for a product + always set product manufacturing cost
-  function loadVariations(row, productId, preselectVariationId = null) {
-      const $variationSelect = row.find('.variation-select');
-      const $mCostInput = row.find('.manufacturing_cost');
-      const $consumption = row.find('.consumption');
-
-      $variationSelect.html('<option value="">Loading...</option>').prop('disabled', false);
-
-      $.get(`/product/${productId}/variations`, function (data) {
-          let options = '<option value="">Select Variation</option>';
-
-          (data.variation || []).forEach(v => {
-              options += `<option value="${v.id}">${v.sku}</option>`;
-          });
-
-          $variationSelect.html(options).prop('disabled', false);
-
-          if ($variationSelect.hasClass('select2-hidden-accessible')) {
-              $variationSelect.select2('destroy');
+          if (productId) {
+              loadVariations(row, productId, preselectVariationId);
+          } else {
+              row.find('.variation-select')
+                .html('<option value="">Select Variation</option>')
+                .prop('disabled', false)
+                .trigger('change');
           }
-          $variationSelect.select2({ width: '100%', dropdownAutoWidth: true });
+      });
 
-          // 🔹 Always use product's manufacturing cost
-          if (data.product && data.product.manufacturing_cost !== undefined) {
-              $mCostInput.val(parseFloat(data.product.manufacturing_cost).toFixed(2));
-          }
-
-          if (data.product && data.product.consumption !== undefined) {
-            $consumption.val(parseFloat(data.product.consumption).toFixed(2));
-          }
-
-          // 🔹 Preselect variation if provided
-          if (preselectVariationId) {
-              $variationSelect.val(String(preselectVariationId)).trigger('change');
-          }
-
+      // 🔹 Recalc row on quantity input
+      $(document).on('input', '.order-qty, .consumption, .manufacturing_cost', function () {
+          const row = $(this).closest('tr');
           recalcRow(row);
           recalcSummary();
       });
-  }
 
-  // 🔹 Recalculate row total
-  function recalcRow(row) {
-      const orderQty = parseFloat(row.find('.order-qty').val()) || 0;
-      const consumption = parseFloat(row.find('.consumption').val()) || 0;
-      const mCost = parseFloat(row.find('.manufacturing_cost').val()) || 0;
+      // 🔹 Auto-add row on Enter key
+      $(document).on('keypress', '.order-qty', function (e) {
+        if (e.which === 13) {
+            e.preventDefault();
+            const qty = $(this).val().trim();
+            if (qty !== '') {
+                addRow();
+            } else {
+                alert('Enter quantity first');
+                $(this).focus();
+            }
+        }
+      });
 
-      const rawUse = orderQty * consumption;
-      const total = orderQty * mCost;
+      // 🔹 Remove row button
+      $(document).on('click', '.remove-row-btn', function () {
+          $(this).closest('tr').remove();
+          recalcSummary();
+      });
 
-      row.find('.raw_use').val(rawUse.toFixed(2));
-      row.find('input[name$="[total]"]').val(total.toFixed(2));
-  }
+      // 🔹 Add row button
+      $('#addRowBtn').on('click', addRow);
+    });
 
+    // 🔹 Add new row
+    function addRow() {
+        const rowCount = $('#itemTable tbody tr').length;
+
+        const productOptions = `
+            <option value="">Select Item</option>
+            @foreach($allProducts as $item)
+              <option value="{{ $item->id }}" 
+                      data-consumption="{{ $item->consumption }}"
+                      data-mfg-cost="{{ $item->manufacturing_cost }}">
+                {{ $item->name }}
+              </option>
+            @endforeach
+        `;
+
+        const $newRow = $(`
+            <tr>
+                <td>
+                    <select name="product_details[${rowCount}][product_id]" class="form-control select2-js product-select" required>
+                        ${productOptions}
+                    </select>
+                </td>
+                <td>
+                    <select name="product_details[${rowCount}][variation_id]" class="form-control select2-js variation-select">
+                        <option value="">Select Variation</option>
+                    </select>
+                </td>
+                <td><input type="number" class="form-control consumption" name="product_details[${rowCount}][consumption]" step="any" value="0" required></td>
+                <td><input type="number" class="form-control manufacturing_cost" name="product_details[${rowCount}][manufacturing_cost]" step="any" value="0"></td>
+                <td><input type="number" class="form-control order-qty" name="product_details[${rowCount}][order_qty]" step="any" value="0" required></td>
+                <td><input type="text" class="form-control" name="product_details[${rowCount}][remarks]"></td>
+                <td><input type="number" class="form-control raw_use" name="product_details[0][raw_use]" step="any" value="0" readonly></td>
+                <td><input type="number" class="form-control" name="product_details[0][total]" step="any" value="0" readonly></td>
+                <td><button type="button" class="btn btn-danger btn-sm remove-row-btn"><i class="fas fa-times"></i></button></td>
+            </tr>
+        `);
+
+        $('#itemTable tbody').append($newRow);
+
+        // Reinitialize Select2
+        $newRow.find('.select2-js').select2({ width: '100%', dropdownAutoWidth: true });
+    }
+
+    // 🔹 Load variations for a product + always set product manufacturing cost
+    function loadVariations(row, productId, preselectVariationId = null) {
+        const $variationSelect = row.find('.variation-select');
+        const $mCostInput = row.find('.manufacturing_cost');
+        const $consumption = row.find('.consumption');
+
+        $variationSelect.html('<option value="">Loading...</option>').prop('disabled', false);
+
+        $.get(`/product/${productId}/variations`, function (data) {
+            let options = '<option value="">Select Variation</option>';
+
+            (data.variation || []).forEach(v => {
+                options += `<option value="${v.id}">${v.sku}</option>`;
+            });
+
+            $variationSelect.html(options).prop('disabled', false);
+
+            if ($variationSelect.hasClass('select2-hidden-accessible')) {
+                $variationSelect.select2('destroy');
+            }
+            $variationSelect.select2({ width: '100%', dropdownAutoWidth: true });
+
+            // 🔹 Always use product's manufacturing cost
+            if (data.product && data.product.manufacturing_cost !== undefined) {
+                $mCostInput.val(parseFloat(data.product.manufacturing_cost).toFixed(2));
+            }
+
+            if (data.product && data.product.consumption !== undefined) {
+              $consumption.val(parseFloat(data.product.consumption).toFixed(2));
+            }
+
+            // 🔹 Preselect variation if provided
+            if (preselectVariationId) {
+                $variationSelect.val(String(preselectVariationId)).trigger('change');
+            }
+
+            recalcRow(row);
+            recalcSummary();
+        });
+    }
+
+    // 🔹 Recalculate row total
+    function recalcRow(row) {
+        const orderQty = parseFloat(row.find('.order-qty').val()) || 0;
+        const consumption = parseFloat(row.find('.consumption').val()) || 0;
+        const mCost = parseFloat(row.find('.manufacturing_cost').val()) || 0;
+
+        const rawUse = orderQty * consumption;
+        const total = orderQty * mCost;
+
+        row.find('.raw_use').val(rawUse.toFixed(2));
+        row.find('input[name$="[total]"]').val(total.toFixed(2));
+    }
 
     // 🔹 Recalculate summary totals
     function recalcSummary() {

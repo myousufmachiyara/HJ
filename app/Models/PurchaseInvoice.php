@@ -16,8 +16,6 @@ class PurchaseInvoice extends Model
         'bill_no',
         'ref_no',
         'remarks',
-        'convance_charges',
-        'labour_charges',
         'bill_discount',
         'created_by'
     ];

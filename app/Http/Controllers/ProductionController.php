@@ -21,7 +21,7 @@ class ProductionController extends Controller
 {
     public function index()
     {
-        $productions = Production::with(['vendor', 'category', 'details'])->orderBy('id', 'desc')->get();
+        $productions = Production::with(['vendor', 'details'])->orderBy('id', 'desc')->get();
 
         // Calculate total amount for each production
         foreach ($productions as $production) {
@@ -32,7 +32,6 @@ class ProductionController extends Controller
 
         return view('production.index', compact('productions'));
     }
-
 
     public function create()
     {
@@ -54,7 +53,6 @@ class ProductionController extends Controller
         return view('production.create', compact('vendors', 'categories', 'allProducts', 'units'));
     }
 
-
     public function store(Request $request)
     {
         $request->validate([
@@ -73,7 +71,6 @@ class ProductionController extends Controller
             'product_details.*.variation_id' => 'nullable|exists:product_variations,id',
             'product_details.*.order_qty' => 'required|numeric|min:0.01',
             'product_details.*.manufacturing_cost' => 'nullable|numeric|min:0',
-            'product_details.*.consumption' => 'nullable|numeric|min:0',
             'product_details.*.remarks' => 'nullable|string',
         ]);
 
@@ -119,7 +116,6 @@ class ProductionController extends Controller
                     'variation_id'      => $prod['variation_id'] ?? null,
                     'manufacturing_cost'=> $prod['manufacturing_cost'] ?? 0,
                     'order_qty'         => $prod['order_qty'],
-                    'consumption'       => $prod['consumption'] ?? 0,
                     'remarks'           => $prod['remarks'] ?? null,
                 ]);
 
@@ -129,8 +125,7 @@ class ProductionController extends Controller
             DB::commit();
             Log::info('Production transaction committed successfully', ['production_id' => $production->id]);
 
-            return redirect()->route('production.index')
-                            ->with('success', 'Production created successfully.');
+            return redirect()->route('production.index')->with('success', 'Production created successfully.');
 
         } catch (\Exception $e) {
             DB::rollBack();
@@ -148,16 +143,11 @@ class ProductionController extends Controller
         }
     }
 
-
     public function edit($id)
     {
-        $production = Production::with(['details.variation', 'details.product'])->findOrFail($id);
+        $production = Production::with(['details.variation', 'details.product', 'productDetails'])->findOrFail($id);
         $vendors = ChartOfAccounts::where('account_type', 'vendor')->get();
-        $categories = ProductCategory::all();
-        $products = Product::with('variations') // <-- load variations
-                            ->select('id', 'name', 'barcode', 'measurement_unit')
-                            ->where('item_type', 'raw')
-                            ->get();
+        $products = Product::with('variations')->select('id', 'name', 'barcode', 'measurement_unit')->get();
         $units = MeasurementUnit::all();
 
         $allProducts = $products->map(function ($product) {
@@ -173,7 +163,7 @@ class ProductionController extends Controller
         });
 
 
-        return view('production.edit', compact('production', 'vendors', 'categories', 'allProducts', 'units'));
+        return view('production.edit', compact('production', 'vendors', 'allProducts', 'units'));
     }
 
 
@@ -484,8 +474,14 @@ class ProductionController extends Controller
 
     public function print($id)
     {
-        $production = Production::with(['vendor', 'details.product', 'details.invoice', 'details.measurementUnit'])
-            ->findOrFail($id);
+        $production = Production::with([
+            'vendor',
+            'details.product',
+            'details.invoice',
+            'details.measurementUnit',
+            'productDetails.product',
+            'productDetails.variation'
+        ])->findOrFail($id);
 
         $pdf = new \TCPDF();
         $pdf->setPrintHeader(false);
@@ -510,7 +506,6 @@ class ProductionController extends Controller
             <tr><td><b>Production #</b></td><td>' . $production->id . '</td></tr>
             <tr><td><b>Date</b></td><td>' . \Carbon\Carbon::parse($production->order_date)->format('d/m/Y') . '</td></tr>
             <tr><td><b>Vendor</b></td><td>' . ($production->vendor->name ?? '-') . '</td></tr>
-            <tr><td><b>Type</b></td><td>' . ucfirst(str_replace('_', ' ', $production->production_type)) . '</td></tr>
         </table>';
         $pdf->writeHTML($infoHtml, false, false, false, false, '');
 
@@ -524,7 +519,7 @@ class ProductionController extends Controller
         $pdf->Cell(50, 8, 'Production Order', 0, 1, 'C', 1);
         $pdf->SetTextColor(0, 0, 0);
 
-        // --- Items Table ---
+        // --- Raw Materials Table ---
         $pdf->Ln(5);
         $html = '<table border="0.3" cellpadding="4" style="text-align:center;font-size:10px;">
             <tr style="background-color:#f5f5f5; font-weight:bold;">
@@ -537,12 +532,12 @@ class ProductionController extends Controller
             </tr>';
 
         $count = 0;
-        $totalAmount = 0;
+        $totalRaw = 0;
 
         foreach ($production->details as $detail) {
             $count++;
             $amount = $detail->total_cost ?? ($detail->qty * $detail->rate);
-            $totalAmount += $amount;
+            $totalRaw += $amount;
 
             $html .= '
             <tr>
@@ -555,15 +550,67 @@ class ProductionController extends Controller
             </tr>';
         }
 
-        // --- Totals ---
         $html .= '
             <tr style="background-color:#f5f5f5;">
-                <td colspan="5" align="right"><b>Total Amount</b></td>
-                <td align="right"><b>' . number_format($totalAmount, 2) . '</b></td>
+                <td colspan="5" align="right"><b>Total Raw Material Cost</b></td>
+                <td align="right"><b>' . number_format($totalRaw, 2) . '</b></td>
             </tr>
         </table>';
 
         $pdf->writeHTML($html, true, false, true, false, '');
+
+        // --- Finished Goods Table ---
+        $pdf->Ln(10);
+        $htmlFinished = '<table border="0.3" cellpadding="4" style="text-align:center;font-size:10px;">
+            <tr style="background-color:#f5f5f5; font-weight:bold;">
+                <th width="7%">S.No</th>
+                <th width="28%">Product</th>
+                <th width="15%">Variation</th>
+                <th width="20%">Order Qty</th>
+                <th width="15%">Mfg Cost</th>
+                <th width="15%">Total</th>
+            </tr>';
+
+        $count = 0;
+        $totalFinished = 0;
+
+        foreach ($production->productDetails as $prod) {
+            $count++;
+            $amount = $prod->order_qty * ($prod->manufacturing_cost ?? 0);
+            $totalFinished += $amount;
+
+            $htmlFinished .= '
+            <tr>
+                <td align="center">' . $count . '</td>
+                <td>' . ($prod->product->name ?? '-') . '</td>
+                <td>' . ($prod->variation->name ?? '-') . '</td>
+                <td align="center">' . number_format($prod->order_qty, 2) . '</td>
+                <td align="right">' . number_format($prod->manufacturing_cost ?? 0, 2) . '</td>
+                <td align="right">' . number_format($amount, 2) . '</td>
+            </tr>';
+        }
+
+        $htmlFinished .= '
+            <tr style="background-color:#f5f5f5;">
+                <td colspan="5" align="right"><b>Total Finished Goods Cost</b></td>
+                <td align="right"><b>' . number_format($totalFinished, 2) . '</b></td>
+            </tr>
+        </table>';
+
+        $pdf->writeHTML($htmlFinished, true, false, true, false, '');
+
+        // --- Combined Totals ---
+        $grandTotal = $totalRaw + $totalFinished;
+
+        $pdf->Ln(5);
+        $summaryHtml = '
+        <table border="0.3" cellpadding="4" style="font-size:10px;">
+            <tr>
+                <td width="70%" align="right"><b>Grand Total (Raw + Finished)</b></td>
+                <td width="30%" align="right"><b>' . number_format($grandTotal, 2) . '</b></td>
+            </tr>
+        </table>';
+        $pdf->writeHTML($summaryHtml, true, false, true, false, '');
 
         // --- Remarks ---
         if (!empty($production->remarks)) {
@@ -668,5 +715,6 @@ class ProductionController extends Controller
 
         return $pdf->Output('production_gatepass_' . $production->id . '.pdf', 'I');
     }
+
 
 }
