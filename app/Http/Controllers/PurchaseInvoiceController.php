@@ -256,24 +256,6 @@ class PurchaseInvoiceController extends Controller
         return redirect()->route('purchase_invoices.index')->with('success', 'Purchase Invoice deleted successfully.');
     }
 
-    public function getInvoicesByItem($itemId)
-    {
-        $invoices = PurchaseInvoice::whereHas('items', function ($q) use ($itemId) {
-            $q->where('item_id', $itemId);
-        })
-        ->with('vendor')
-        ->get(['id', 'vendor_id']);
-
-        return response()->json(
-            $invoices->map(function ($inv) {
-                return [
-                    'id' => $inv->id,
-                    'vendor' => $inv->vendor->name ?? '',
-                ];
-            })
-        );
-    }
-
     public function getItemDetails($invoiceId, $itemId)
     {
         $item = PurchaseInvoiceItem::with(['product', 'measurementUnit'])
@@ -423,33 +405,34 @@ class PurchaseInvoiceController extends Controller
         return $pdf->Output('purchase_invoice_' . $invoice->id . '.pdf', 'I');
     }
 
-    public function getProductInvoices($productId)
+    public function getProductInvoices($productId, $variationId = null)
     {
-        try {
-            // Fetch invoices for this vendor that include this product
-            $invoices = PurchaseInvoice::whereHas('items', function($q) use ($productId) {
-                    $q->where('item_id', $productId);
-                })
-                ->with(['items' => function($q) use ($productId) {
-                    $q->where('item_id', $productId);
-                }])
-                ->get();
+        $invoices = PurchaseInvoice::whereHas('items', function ($q) use ($productId, $variationId) {
+                $q->where('item_id', $productId);
+                if ($variationId) {
+                    $q->where('variation_id', $variationId);
+                }
+            })
+            ->with(['items' => function ($q) use ($productId, $variationId) {
+                $q->where('item_id', $productId);
+                if ($variationId) {
+                    $q->where('variation_id', $variationId);
+                }
+            }])
+            ->get();
 
-            $data = $invoices->map(function($inv) {
-                $item = $inv->items->first(); // get the first matching item
-                return [
-                    'id' => $inv->id,
-                    'number' => $inv->invoice_number,
-                    'rate' => $item ? $item->price : 0, // safe fallback
-                ];
-            });
+        $data = $invoices->map(function ($inv) use ($productId, $variationId) {
+            // find matching item for this product (and variation)
+            $item = $inv->items->first(); // because we already filtered in with()
 
-            return response()->json($data);
+            return [
+                'id' => $inv->id,
+                'number' => $inv->invoice_number,
+                'rate' => $item ? $item->price : 0,
+            ];
+        });
 
-        } catch (\Exception $e) {
-            Log::error('Invoice fetch failed: '.$e->getMessage());
-            return response()->json(['error' => 'Failed to load invoices'], 500);
-        }
+        return response()->json($data);
     }
 
     public function addAtt(Request $request, $id)

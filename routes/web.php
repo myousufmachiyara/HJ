@@ -44,7 +44,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/product/{product}/variations', [ProductController::class, 'getVariations'])->name('product.variations');
     Route::get('/product/{product}/productions', [ProductionController::class, 'getProductProductions'])->name('product.productions');
     //Purchase Helper
-    Route::get('/product/{product}/invoices', [PurchaseInvoiceController::class, 'getProductInvoices']);
+    Route::get('/product/{product}/invoices/{variation?}', [PurchaseInvoiceController::class, 'getProductInvoices']);
+
 
     // Production Summary
     Route::get('/production-summary/{id}', [ProductionController::class, 'summary'])->name('production.summary');

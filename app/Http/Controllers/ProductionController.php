@@ -145,11 +145,23 @@ class ProductionController extends Controller
 
     public function edit($id)
     {
-        $production = Production::with(['details.variation', 'details.product', 'productDetails'])->findOrFail($id);
+        // Load production with all needed relationships
+        $production = Production::with([
+            'details.product',        // raw material product
+            'details.variation',      // raw material variation
+            'details.invoice',        // raw material purchase invoice
+            'productDetails.product', // finished good product
+            'productDetails.variation'// finished good variation
+        ])->findOrFail($id);
+
+        // Get all vendors
         $vendors = ChartOfAccounts::where('account_type', 'vendor')->get();
-        $products = Product::with('variations')->select('id', 'name', 'barcode', 'measurement_unit')->get();
+
+        // Get all products with variations and measurement unit
+        $products = Product::with('variations')->get();
         $units = MeasurementUnit::all();
 
+        // Prepare a simple structure for JS (for select dropdowns)
         $allProducts = $products->map(function ($product) {
             return (object)[
                 'id' => $product->id,
@@ -162,10 +174,8 @@ class ProductionController extends Controller
             ];
         });
 
-
         return view('production.edit', compact('production', 'vendors', 'allProducts', 'units'));
     }
-
 
     public function update(Request $request, $id)
     {
@@ -267,7 +277,6 @@ class ProductionController extends Controller
         }
     }
 
-
     public function getProductProductions(Request $request, $productId)
     {
         try {
@@ -316,7 +325,6 @@ class ProductionController extends Controller
             ], 500);
         }
     }
-
 
     public function show($id)
     {

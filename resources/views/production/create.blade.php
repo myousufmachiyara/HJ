@@ -149,12 +149,12 @@
                         <option value="">Select Variation</option>
                       </select>
                     </td>
-                    <td><input type="number" class="form-control consumption" name="v[0][consumption]" step="any" value="0" required></td>
+                    <td><input type="number" class="form-control consumption" name="product_details[0][consumption]" step="any" value="0" required></td>
                     <td><input type="number" class="form-control manufacturing_cost" name="product_details[0][manufacturing_cost]" step="any" value="0"></td>
                     <td><input type="number" class="form-control order-qty" name="product_details[0][order_qty]" step="any" value="0" required></td>
                     <td><input type="text" class="form-control" name="product_details[0][remarks]"></td>
                     <td><input type="number" class="form-control raw_use" name="product_details[0][raw_use]" step="any" value="0" readonly></td>
-                    <td><input type="number" class="form-control" name="product_details[0][total]" step="any" value="0" readonly></td>
+                    <td><input type="number" class="form-control total_amount" name="product_details[0][total]" step="any" value="0" readonly></td>
                     <td><button type="button" class="btn btn-danger btn-sm remove-row-btn"><i class="fas fa-times"></i></button></td>
                   </tr>
                 </tbody>
@@ -384,28 +384,31 @@
       fetchInvoices(variationId, row, true);
     }
 
-    // 🔹 Fetch invoices
-    function fetchInvoices(id, row, isVariation = false) {
-      const invoiceSelect = row.querySelector(`select[id^="invoiceSelect"]`);
-      invoiceSelect.innerHTML = `<option value="" disabled selected>Loading...</option>`;
+    function fetchInvoices(productId, row, variationId = null) {
+        const invoiceSelect = row.querySelector(`select[id^="invoiceSelect"]`);
+        invoiceSelect.innerHTML = `<option value="" disabled selected>Loading...</option>`;
 
-      fetch(`/product/${id}/invoices`)
-        .then(res => res.json())
-        .then(data => {
-          invoiceSelect.innerHTML = `<option value="" selected>Select Invoice</option>`;
-          if (Array.isArray(data) && data.length > 0) {
-            data.forEach(inv => {
-              invoiceSelect.innerHTML += `<option value="${inv.id}" data-rate="${inv.rate}">INV-${inv.id}</option>`;
+        let url = `/product/${productId}/invoices`;
+        if (variationId) url += `/${variationId}`;
+
+        fetch(url)
+            .then(res => res.json())
+            .then(data => {
+                invoiceSelect.innerHTML = `<option value="" selected>Select Invoice</option>`;
+
+                if (Array.isArray(data) && data.length > 0) {
+                    data.forEach(inv => {
+                        invoiceSelect.innerHTML += `<option value="${inv.id}" data-rate="${inv.rate}">INV-${inv.id}</option>`;
+                    });
+                } else {
+                    invoiceSelect.innerHTML = `<option value="">No Invoices Found</option>`;
+                }
+
+                $(invoiceSelect).select2({ width: '100%' });
+            })
+            .catch(() => {
+                invoiceSelect.innerHTML = `<option value="">Error loading invoices</option>`;
             });
-          } else {
-            invoiceSelect.innerHTML = `<option value="">No Invoices Found</option>`;
-          }
-
-          $(invoiceSelect).select2({ width: '100%' });
-        })
-        .catch(() => {
-          invoiceSelect.innerHTML = `<option value="">Error loading invoices</option>`;
-        });
     }
 
     // 🔹 When invoice changes
@@ -489,7 +492,7 @@
       $('#addRowBtn').on('click', addRow);
     });
 
-    // 🔹 Add new row
+    // 🔹 Add new Finished Goods row
     function addRow() {
         const rowCount = $('#itemTable tbody tr').length;
 
@@ -520,8 +523,8 @@
                 <td><input type="number" class="form-control manufacturing_cost" name="product_details[${rowCount}][manufacturing_cost]" step="any" value="0"></td>
                 <td><input type="number" class="form-control order-qty" name="product_details[${rowCount}][order_qty]" step="any" value="0" required></td>
                 <td><input type="text" class="form-control" name="product_details[${rowCount}][remarks]"></td>
-                <td><input type="number" class="form-control raw_use" name="product_details[0][raw_use]" step="any" value="0" readonly></td>
-                <td><input type="number" class="form-control" name="product_details[0][total]" step="any" value="0" readonly></td>
+                <td><input type="number" class="form-control raw_use" name="product_details[${rowCount}][raw_use]" step="any" value="0" readonly></td>
+                <td><input type="number" class="form-control total_amount" name="product_details[${rowCount}][total]" step="any" value="0" readonly></td>
                 <td><button type="button" class="btn btn-danger btn-sm remove-row-btn"><i class="fas fa-times"></i></button></td>
             </tr>
         `);
@@ -532,7 +535,28 @@
         $newRow.find('.select2-js').select2({ width: '100%', dropdownAutoWidth: true });
     }
 
-    // 🔹 Load variations for a product + always set product manufacturing cost
+    // 🔹 Bind variation change to recalc / invoices
+    $(document).on('change', '.variation-select', function() {
+        onVariationChange(this); // existing function
+        const row = $(this).closest('tr');
+        recalcRow(row);
+        recalcSummary();
+    });
+
+    // 🔹 Recalc row totals on input
+    $(document).on('input', '.order-qty, .consumption, .manufacturing_cost', function () {
+        const row = $(this).closest('tr');
+        recalcRow(row);
+        recalcSummary();
+    });
+
+    // 🔹 Remove Finished Goods row
+    $(document).on('click', '.remove-row-btn', function () {
+        $(this).closest('tr').remove();
+        recalcSummary();
+    });
+
+    // 🔹 Load variations for product, set manufacturing cost and consumption
     function loadVariations(row, productId, preselectVariationId = null) {
         const $variationSelect = row.find('.variation-select');
         const $mCostInput = row.find('.manufacturing_cost');
@@ -554,16 +578,16 @@
             }
             $variationSelect.select2({ width: '100%', dropdownAutoWidth: true });
 
-            // 🔹 Always use product's manufacturing cost
+            // Set manufacturing cost and consumption
             if (data.product && data.product.manufacturing_cost !== undefined) {
                 $mCostInput.val(parseFloat(data.product.manufacturing_cost).toFixed(2));
             }
 
             if (data.product && data.product.consumption !== undefined) {
-              $consumption.val(parseFloat(data.product.consumption).toFixed(2));
+                $consumption.val(parseFloat(data.product.consumption).toFixed(2));
             }
 
-            // 🔹 Preselect variation if provided
+            // Preselect variation if provided
             if (preselectVariationId) {
                 $variationSelect.val(String(preselectVariationId)).trigger('change');
             }
@@ -573,7 +597,7 @@
         });
     }
 
-    // 🔹 Recalculate row total
+    // 🔹 Recalculate Finished Goods row totals
     function recalcRow(row) {
         const orderQty = parseFloat(row.find('.order-qty').val()) || 0;
         const consumption = parseFloat(row.find('.consumption').val()) || 0;
@@ -583,35 +607,34 @@
         const total = orderQty * mCost;
 
         row.find('.raw_use').val(rawUse.toFixed(2));
-        row.find('input[name$="[total]"]').val(total.toFixed(2));
+        row.find('.total_amount').val(total.toFixed(2));
     }
 
     // 🔹 Recalculate summary totals
     function recalcSummary() {
-      let totalRawUse = 0, productTotalAmt = 0;
+        let totalRawUse = 0, productTotalAmt = 0;
 
-      $('#itemTable tbody tr').each(function () {
-        const rawUse = parseFloat($(this).find('.raw_use').val()) || 0;
-        const total = parseFloat($(this).find('input[name$="[total]"]').val()) || 0;
+        $('#itemTable tbody tr').each(function () {
+            const rawUse = parseFloat($(this).find('.raw_use').val()) || 0;
+            const total = parseFloat($(this).find('.total_amount').val()) || 0;
 
-        totalRawUse += rawUse;
-        productTotalAmt += total;
-      });
+            totalRawUse += rawUse;
+            productTotalAmt += total;
+        });
 
-      // Fill values in summary
-      $('#total_raw_use').val(totalRawUse.toFixed(2));
-      $('#product_total_amt').val(productTotalAmt.toFixed(2));
+        // Fill values in summary
+        $('#total_raw_use').val(totalRawUse.toFixed(2));
+        $('#product_total_amt').val(productTotalAmt.toFixed(2));
 
-      // Remaining raw = Total raw qty - Total raw use
-      const totalRawQty = parseFloat($('#total_fab').val()) || 0;
-      const remainingRaw = totalRawQty - totalRawUse;
-      $('#remaining_raw').val(remainingRaw.toFixed(2));
+        // Remaining raw = Total raw qty - Total raw use
+        const totalRawQty = parseFloat($('#total_fab').val()) || 0;
+        const remainingRaw = totalRawQty - totalRawUse;
+        $('#remaining_raw').val(remainingRaw.toFixed(2));
 
-      // Net amount = Product total amount (you can adjust logic if needed)
-      $('#netTotal').text(formatNumberWithCommas(productTotalAmt.toFixed(0)));
-      $('#net_amount').val(productTotalAmt.toFixed(2));
+        // Net amount = Product total amount
+        $('#netTotal').text(formatNumberWithCommas(productTotalAmt.toFixed(0)));
+        $('#net_amount').val(productTotalAmt.toFixed(2));
     }
-
   </script>
 
 @endsection
